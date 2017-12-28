@@ -1,0 +1,9 @@
+" vim: et ts=2 sts=2 sw=2
+
+Do (Some Keystrokes):
+  iTesting, nothing much here\<Esc>
+  yyp
+
+Expect (2 lines):
+  Testing, nothing much here
+  Testing, nothing much here
