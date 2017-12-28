@@ -1,0 +1,4 @@
+set runtimepath=/root/.vim,$VIM/vimfile,s$VIMRUNTIME,$VIM/vimfiles/after,/strotter/template,/vader
+
+filetype plugin indent on
+syntax on
