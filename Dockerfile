@@ -1,13 +1,8 @@
 FROM tweekmonster/vim-testbed:latest
 
-RUN install_vim -tag v8.0.0027 -build -py
+RUN apk --update add bash git python py-pip && rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
 
-ENV PACKAGES="\
-    bash \
-    git \
-    python \
-"
-RUN apk --update add $PACKAGES && rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+RUN install_vim -tag v8.0.0027 -py -build
 
 RUN git clone https://github.com/junegunn/vader.vim /vader
 RUN mkdir -p /strotter/template
