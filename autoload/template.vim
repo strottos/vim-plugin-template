@@ -8,14 +8,26 @@ set cpoptions&vim
 let s:py = has('python3') ? 'py3' : 'py'
 let s:pyeval = function(has('python3') ? 'py3eval' : 'pyeval')
 
-function! s:SetUpPython() abort
-  execute s:py 'import api'
+" Check whether already ran the setup code
+let s:STRTemplateSetup = 0
+
+function! s:SetUpPython()
+  execute s:py 'import api as str_template_api'
+  let s:STRTemplateSetup = 1
 endfunction
 
 function! template#Enable()
+  if s:STRTemplateSetup
+    return
+  endif
+
   execute s:SetUpPython()
 
   " TODO: Program something in
+endfunction
+
+function! template#Search(for)
+  exec s:py 'str_template_api.testing()'
 endfunction
 
 " This is basic vim plugin boilerplate

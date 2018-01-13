@@ -1,3 +1,5 @@
+" vim: et ts=2 sts=2 sw=2
+
 " This is basic vim plugin boilerplate
 let s:save_cpo = &cpoptions
 set cpoptions&vim
@@ -12,14 +14,14 @@ if exists( "g:loaded_strotter_template_plugin" )
   finish
 elseif !(has('python') || has('python3'))
   echohl WarningMsg |
-      \ echomsg 'Plugin requires vim compiled with python or python3' |
-      \ echohl None
+        \ echomsg 'Plugin requires vim compiled with python or python3' |
+        \ echohl None
   call s:restore_cpo()
   finish
 elseif !(has('job') && has('timers') && has('lambda'))
   echohl WarningMsg |
-      \ echomsg 'Plugin requires vim compiled with features `job`, `timers` and `lambda`' |
-      \ echohl None
+        \ echomsg 'Plugin requires vim compiled with features `job`, `timers` and `lambda`' |
+        \ echohl None
   call s:restore_cpo()
   finish
 endif
@@ -40,6 +42,8 @@ if get(g:, 'strotter_template_plugin_autostart', 1)
     call template#Enable()
   endif
 endif
+
+command! -nargs=1 TempSearch call template#Search(<q-args>)
 
 " This is basic vim plugin boilerplate
 call s:restore_cpo()

@@ -1,9 +1,42 @@
 " vim: et ts=2 sts=2 sw=2
 
-Do (Some Keystrokes):
-  iTesting, nothing much here\<Esc>
-  yyp
+Before:
+  call template#Enable()
 
-Expect (2 lines):
+  function! ParseSTRBuffers()
+    redir => l:buffers
+      silent exec 'buffers!'
+    redir end
+
+    let l:ret = []
+
+    for l:line in split(l:buffers, '\n')
+      let l:match = matchlist(l:line, '^.*"\[\(STR_Test_Buffer_[1-9]*\)\]".*')
+      if !empty(l:match)
+        call add(l:ret, l:match[1])
+      endif
+    endfor
+
+    return l:ret
+  endfunction
+
+After:
+  Restore
+
+Given foobar (Some simple file):
   Testing, nothing much here
-  Testing, nothing much here
+  Another test
+  And another line
+  But the previous line doesn't contain the word test
+
+Execute (Perform case sensitive search and check outcome):
+  TempSearch test
+
+  let b:strtestbufnum = bufnr('STR_Test_Buffer_1')
+
+  AssertEqual ['STR_Test_Buffer_1'], ParseSTRBuffers()
+  AssertEqual getbufvar(b:strtestbufnum, '&swapfile'), 0
+  AssertEqual getbufvar(b:strtestbufnum, '&filetype'), 'STRTestBuf'
+  AssertEqual getbufvar(b:strtestbufnum, '&modifiable'), 0
+  AssertEqual getbufvar(b:strtestbufnum, '&buflisted'), 0
+  " TODO: Assert that we have the correct lines in that window
