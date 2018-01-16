@@ -3,7 +3,7 @@
 Before:
   call template#Enable()
 
-  function! ParseSTRBuffers()
+  function! GetBuffers(...)
     redir => l:buffers
       silent exec 'buffers!'
     redir end
@@ -11,9 +11,14 @@ Before:
     let l:ret = []
 
     for l:line in split(l:buffers, '\n')
-      let l:match = matchlist(l:line, '^.*"\[\(STR_Test_Buffer_[1-9]*\)\]".*')
-      if !empty(l:match)
-        call add(l:ret, l:match[1])
+      if a:0
+        let l:argmatch = a:1
+        let l:match = matchlist(l:line, '^.*"' . l:argmatch . '".*')
+        if !empty(l:match)
+          call add(l:ret, l:argmatch)
+        endif
+      else
+        call add(l:ret, l:line)
       endif
     endfor
 
@@ -23,20 +28,79 @@ Before:
 After:
   Restore
 
-Given foobar (Some simple file):
-  Testing, nothing much here
-  Another test
-  And another line
-  But the previous line doesn't contain the word test
+Given:
+  Some simple text
+  with nothing much
+  of importance
+
+Execute (Perform case sensitive search and check buffer opens):
+  TempSearch testing_nonsense_string
+
+  let t:strtestbuf_name = 'File_Search_Buffer'
+  let t:strtestbuf_num = bufnr(t:strtestbuf_name)
+
+  AssertEqual [t:strtestbuf_name], GetBuffers(t:strtestbuf_name)
+  AssertEqual 0, getbufvar(t:strtestbuf_num, '&swapfile')
+  AssertEqual 'STRTestBuf', getbufvar(t:strtestbuf_num, '&filetype')
+  AssertEqual 0, getbufvar(t:strtestbuf_num, '&modifiable')
+  AssertEqual 'nofile', getbufvar(t:strtestbuf_num, '&buftype')
+  AssertEqual 0, getbufvar(t:strtestbuf_num, '&buflisted')
+
+  unlet t:strtestbuf_num
+  unlet t:strtestbuf_name
+
+Execute (Perform two case sensitive searchs and check buffer reopens):
+  TempSearch testing_nonsense_string
+
+  let t:strtestbuf_name = 'File_Search_Buffer'
+  let t:strtestbuf_num = bufnr(t:strtestbuf_name)
+  let t:previous_num_windows = winnr('$')
+  let t:previous_buffers_length = len(GetBuffers())
+
+  TempSearch testing_nonsense_string2
+
+  AssertEqual t:strtestbuf_num, bufnr(t:strtestbuf_name)
+  AssertEqual t:previous_buffers_length, len(GetBuffers())
+  AssertEqual t:previous_num_windows, winnr('$')
+
+  unlet t:strtestbuf_num
+  unlet t:strtestbuf_name
+  unlet t:previous_num_windows
+  unlet t:previous_buffers_length
 
 Execute (Perform case sensitive search and check outcome):
+  TempSearch test_basic.vader
+
+  sleep 200ms
+
+  AssertEqual ['./test/test_basic.vader'], getline(2,'$')
+
+Execute (Perform case sensitive search and check outcome, second go):
+  TempSearch template.vim
+
+  sleep 200ms
+
+  AssertEqual ['./autoload/template.vim', './plugin/template.vim'], sort(getline(2,'$'))
+
+Execute (Always append to correct buffer and cursor remains):
+  let t:original_window = winnr()
+  call cursor(2,6)
+
   TempSearch test
 
-  let b:strtestbufnum = bufnr('STR_Test_Buffer_1')
+  AssertNotEqual t:original_window, winnr()
+  execute t:original_window . ' wincmd w'
+  let t:current_position = getpos('.')
+  AssertEqual t:current_position[1], 2
+  AssertEqual t:current_position[2], 6
 
-  AssertEqual ['STR_Test_Buffer_1'], ParseSTRBuffers()
-  AssertEqual getbufvar(b:strtestbufnum, '&swapfile'), 0
-  AssertEqual getbufvar(b:strtestbufnum, '&filetype'), 'STRTestBuf'
-  AssertEqual getbufvar(b:strtestbufnum, '&modifiable'), 0
-  AssertEqual getbufvar(b:strtestbufnum, '&buflisted'), 0
-  " TODO: Assert that we have the correct lines in that window
+  sleep 200ms
+
+  wincmd b
+  AssertNotEqual line('$'), 1
+  let t:current_position = getpos('.')
+  AssertEqual t:current_position[1], 1
+  AssertEqual t:current_position[2], 1
+
+  unlet t:current_position
+  unlet t:original_window

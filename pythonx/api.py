@@ -1,14 +1,28 @@
+"""
+API for the VIM template plugin
+"""
 import vim
 
 
-def testing():
+class API:
     """
-    Test function, empty so far
+    VIM Plugin API
     """
-    # vim.command('timer_start(2000, {-> execute(\'echom "Testing Python"\', '')}, {\'repeat\': 3})')
-    vim.command('rightbelow 10 new')
-    vim.command('silent edit \[STR_Test_Buffer_1\]')
-    vim.command('setlocal noswapfile')
-    vim.command('setlocal filetype=STRTestBuf')
-    vim.command('setlocal nomodifiable')
-    vim.command('setlocal nobuflisted')
+    @staticmethod
+    def parse_output(text, param):
+        """
+        Parse text for the word 'param' and output the result
+        """
+        if param not in text:
+            return
+
+        output_buffer = None
+        for buf in vim.buffers:
+            # buf.name gives the full path annoyingly
+            if buf.name.split('/')[-1] == 'File_Search_Buffer':
+                output_buffer = buf
+        if not output_buffer:
+            return
+        output_buffer.options['modifiable'] = True
+        output_buffer.append(text)
+        output_buffer.options['modifiable'] = False
