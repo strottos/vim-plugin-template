@@ -1,0 +1,19 @@
+Execute(Test jobs are created and output exists):
+  let t:job_id = app#job#Start('test/pythonx/test_prog.py', {})
+
+  AssertEqual app#job#IsRunning(t:job_id), 1
+
+  sleep 100ms
+
+  AssertEqual app#job#IsRunning(t:job_id), 0
+  AssertEqual app#job#Stdout(t:job_id), ['Test stdout vimscript jobs', 'Testing done']
+  AssertEqual app#job#Stderr(t:job_id), ['Test stderr vimscript jobs']
+
+Execute(Test multiple jobs create separate IDs):
+  let t:original_job_id = app#job#Start('/bin/true', {})
+
+  let t:job_id = app#job#Start('/bin/true', {})
+
+  AssertNotEqual t:job_id, t:original_job_id
+
+  unlet t:original_job_id
