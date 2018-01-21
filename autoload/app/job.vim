@@ -16,10 +16,18 @@ function! app#job#Start(command, options) abort
 
   if has_key(a:options, 'out_cb')
     let l:job_info.out_cb = a:options.out_cb
+    let l:job_info.out_cb_args = []
+    if has_key(a:options, 'out_cb_args')
+      let l:job_info.out_cb_args = remove(l:job_options, 'out_cb_args')
+    endif
   endif
 
   if has_key(a:options, 'err_cb')
     let l:job_info.err_cb = a:options.err_cb
+    let l:job_info.err_cb_args = []
+    if has_key(a:options, 'err_cb_args')
+      let l:job_info.err_cb_args = a:options.err_cb_args
+    endif
   endif
 
   let l:job_options.out_cb = function('s:StdoutCallback')
@@ -49,11 +57,12 @@ endfunction
 function! s:StdoutCallback(channel, data) abort
   let l:job = ch_getjob(a:channel)
   let l:job_id = s:ParseProcessID(string(l:job))
+  let l:job_info = s:job_map[l:job_id]
 
-  call add(s:job_map[l:job_id].stdout, a:data)
+  call add(l:job_info.stdout, a:data)
 
-  if has_key(s:job_map[l:job_id], 'out_cb')
-    call s:job_map[l:job_id].out_cb(l:job_id, a:data)
+  if has_key(l:job_info, 'out_cb')
+    call l:job_info.out_cb(l:job_id, a:data, l:job_info.out_cb_args)
   endif
 endfunction
 

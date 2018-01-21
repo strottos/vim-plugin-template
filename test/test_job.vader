@@ -1,6 +1,8 @@
 Execute(Test jobs are created and output exists):
   let t:job_id = app#job#Start('test/pythonx/test_prog.py', {})
 
+  sleep 30ms
+
   AssertEqual app#job#IsRunning(t:job_id), 1
 
   sleep 100ms
