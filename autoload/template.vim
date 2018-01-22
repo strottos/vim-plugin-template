@@ -26,8 +26,24 @@ function! template#Enable()
   execute s:SetUpPython()
 endfunction
 
-function! s:searchOutput(job_id, data, args)
+function! s:SearchOutput(job_id, data, args)
   execute s:py 'str_template_api.parse_output("' . a:data . '", "' . a:args.for . '")'
+endfunction
+
+function! s:MapKeyBindings()
+  nnoremap <buffer> <silent> q :q!<CR>
+  nnoremap <buffer> <silent> o :call template#OpenFile()<CR>
+  nnoremap <buffer> <silent> <CR> :call template#OpenFile()<CR>
+endfunction
+
+function! template#OpenFile()
+  let l:filename = getline('.')
+  let l:current_window = winnr()
+  wincmd k
+  if l:current_window ==# winnr()
+    new
+  endif
+  silent execute 'edit ' . l:filename
 endfunction
 
 function! template#Search(for)
@@ -41,6 +57,7 @@ function! template#Search(for)
       let s:FileSearchBufferName = l:buf_title
       rightbelow 10 new
       execute 'silent edit ' . s:FileSearchBufferName
+      execute s:MapKeyBindings()
       setlocal noswapfile
       setlocal buftype=nofile
       setlocal filetype=STRTestBuf
@@ -55,7 +72,7 @@ function! template#Search(for)
   setlocal nomodifiable
 
   let l:job_options = {}
-  let l:job_options.out_cb = function('s:searchOutput')
+  let l:job_options.out_cb = function('s:SearchOutput')
   let l:job_options.out_cb_args = {}
   let l:job_options.out_cb_args.for = a:for
   execute app#job#Start('find . -type f', l:job_options)

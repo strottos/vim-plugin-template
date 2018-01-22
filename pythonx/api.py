@@ -4,10 +4,13 @@ API for the VIM template plugin
 import vim
 
 
-class API:
+class API(object):
     """
     VIM Plugin API
     """
+    def __init__(self):
+        pass
+
     @staticmethod
     def parse_output(text, param):
         """

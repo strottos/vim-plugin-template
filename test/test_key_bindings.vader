@@ -1,0 +1,57 @@
+" vim: et ts=2 sts=2 sw=2
+
+Before:
+  call template#Enable()
+
+After:
+  Restore
+
+Execute (Check quit key binding):
+  TempSearch testing
+
+  AssertEqual bufname(bufnr('%')), 'File_Search_Buffer'
+  let t:num_windows = winnr('$')
+
+  " Check we've bound q properly
+  normal q
+
+  AssertEqual t:num_windows - 1, winnr('$')
+
+  " Check it doesn't work in remaining buffer, that is it's a local rebinding
+  normal q
+
+  AssertEqual t:num_windows - 1, winnr('$')
+
+  unlet t:num_windows
+
+Execute (Check file opens in buffer above):
+  tabnew
+
+  TempSearch test
+
+  sleep 100ms
+
+  call cursor(2,1)
+
+  let t:current_window = winnr()
+
+  normal o
+
+  AssertNotEqual t:current_window, winnr()
+  close
+  close
+
+Execute (Check we reopen a window when necessary):
+  tabnew
+  TempSearch test
+  sleep 100ms
+  wincmd k
+  close
+
+  let t:current_buffer = bufnr('%')
+  let t:num_windows = winnr('$')
+  normal o
+
+  AssertNotEqual t:current_buffer, bufnr('%')
+  AssertNotEqual t:num_windows, winnr('$')
+  close
