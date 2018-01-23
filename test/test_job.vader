@@ -19,3 +19,16 @@ Execute(Test multiple jobs create separate IDs):
   AssertNotEqual t:job_id, t:original_job_id
 
   unlet t:original_job_id
+
+Execute(Test jobs will stop):
+  let t:job_id = app#job#Start('sleep 60', {})
+
+  AssertEqual app#job#IsRunning(t:job_id), 1
+
+  sleep 100ms
+
+  execute app#job#Stop(t:job_id)
+
+  sleep 200ms
+
+  AssertEqual app#job#IsRunning(t:job_id), 0

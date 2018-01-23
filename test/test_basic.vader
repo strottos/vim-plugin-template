@@ -36,6 +36,7 @@ Given:
 Execute (Perform case sensitive search and check buffer opens):
   TempSearch testing_nonsense_string
 
+Then:
   let t:strtestbuf_name = 'File_Search_Buffer'
   let t:strtestbuf_num = bufnr(t:strtestbuf_name)
 
@@ -59,6 +60,7 @@ Execute (Perform two case sensitive searchs and check buffer reopens):
 
   TempSearch testing_nonsense_string2
 
+Then:
   AssertEqual t:strtestbuf_num, bufnr(t:strtestbuf_name)
   AssertEqual t:previous_buffers_length, len(GetBuffers())
   AssertEqual t:previous_num_windows, winnr('$')
@@ -73,6 +75,7 @@ Execute (Perform case sensitive search and check outcome):
 
   sleep 200ms
 
+Then:
   AssertEqual ['./test/test_basic.vader'], getline(2,'$')
 
 Execute (Perform case sensitive search and check outcome, second go):
@@ -80,6 +83,7 @@ Execute (Perform case sensitive search and check outcome, second go):
 
   sleep 200ms
 
+Then:
   AssertEqual ['./autoload/template.vim', './plugin/template.vim'], sort(getline(2,'$'))
 
 Execute (Always append to correct buffer and cursor remains):
@@ -104,3 +108,23 @@ Execute (Always append to correct buffer and cursor remains):
 
   unlet t:current_position
   unlet t:original_window
+
+Execute (Test we can stop all jobs):
+  execute template#StopAllJobs()
+
+  sleep 100ms
+
+  AssertEqual template#RunningJobs(), 0
+
+  TempSearch test
+  TempSearch test
+
+  sleep 5ms
+
+  AssertEqual template#RunningJobs(), 2
+
+  execute template#StopAllJobs()
+
+  sleep 100ms
+
+  AssertEqual template#RunningJobs(), 0

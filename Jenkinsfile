@@ -15,7 +15,27 @@ pipeline {
       }
     }
 
-    stage('Test') {
+    stage('Python 2 Unit Testing') {
+      steps {
+        sh'''
+          #!/bin/bash
+          cd pythonx
+          python -m unittest discover -v test/
+        '''
+      }
+    }
+
+    stage('Python 3 Unit Testing') {
+      steps {
+        sh'''
+          #!/bin/bash
+          cd pythonx
+          python3 -m unittest discover -v test/
+        '''
+      }
+    }
+
+    stage('Vader Test') {
       steps {
         sh'''
           #!/bin/bash
