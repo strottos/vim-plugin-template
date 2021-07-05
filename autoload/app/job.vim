@@ -6,8 +6,19 @@ if !has_key(s:, 'job_map')
   let s:job_map = {}
 endif
 
+" A map from timer IDs to jobs, for tracking jobs that need to be killed
+" with SIGKILL if they don't terminate right away.
+if !has_key(s:, 'job_kill_timers')
+  let s:job_kill_timers = {}
+endif
+
+function! s:KillHandler(timer) abort
+  let l:job = remove(s:job_kill_timers, a:timer)
+  call job_stop(l:job, 'kill')
+endfunction
+
 function! s:ParseProcessID(job_string)
-    return matchstr(a:job_string, '\d\+') + 0
+  return matchstr(a:job_string, '\d\+') + 0
 endfunction
 
 function! app#job#Start(command, options) abort
@@ -39,6 +50,28 @@ function! app#job#Start(command, options) abort
   let s:job_map[l:job_id] = l:job_info
 
   return l:job_id
+endfunction
+
+function! app#job#Stop(job_id) abort
+  if !has_key(s:job_map, a:job_id)
+    return
+  endif
+
+  let l:job = s:job_map[a:job_id].job
+
+  " We must close the channel for reading the buffer if it is open
+  " when stopping a job. Otherwise, we will get errors in the status line.
+  if ch_status(job_getchannel(l:job)) is# 'open'
+    call ch_close_in(job_getchannel(l:job))
+  endif
+
+  " Ask nicely for the job to stop.
+  call job_stop(l:job)
+
+  if ale#job#IsRunning(l:job)
+    " Set a 100ms delay for killing the job with SIGKILL.
+    let s:job_kill_timers[timer_start(100, function('s:KillHandler'))] = l:job
+  endif
 endfunction
 
 function! app#job#IsRunning(job_id) abort

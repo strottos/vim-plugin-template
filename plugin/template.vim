@@ -9,7 +9,7 @@ function! s:restore_cpo()
   unlet s:save_cpo
 endfunction
 
-if exists( "g:loaded_strotter_template_plugin" )
+if exists( 'g:loaded_strotter_template_plugin' )
   call s:restore_cpo()
   finish
 elseif !(has('python') || has('python3'))
@@ -24,6 +24,10 @@ elseif !(has('job') && has('timers') && has('lambda'))
         \ echohl None
   call s:restore_cpo()
   finish
+endif
+
+if !exists( 'g:strotter_template_ignore_files_with_suffix' )
+  let g:strotter_template_ignore_files_with_suffix = ['swp', 'swo', 'swn', 'swm']
 endif
 
 let g:loaded_strotter_template_plugin = 1

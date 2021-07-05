@@ -1,0 +1,10 @@
+**/*.swp
+**/*.swo
+**/*.swn
+**/*.swm
+**/*.pyc
+go/bin
+go/pkg
+go/src/github.com
+go/src/golang.org
+go/src/gopkg.in
